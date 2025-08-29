@@ -1,8 +1,31 @@
-# AI Nexus – Document Insight Engine
+# 📚 Study Mate - AI-Powered PDF Learning Assistant
 
 > **Demo Video**: [🎥 Watch Demo](https://drive.google.com/file/d/1marIhmZvvUtLh5wtS4zAtEZIdfhJmfQJ/view?usp=sharing)
 
-A comprehensive AI-powered document intelligence platform that transforms PDF libraries into interactive knowledge hubs. Built for the Adobe Hackathon Finale with cutting-edge AI capabilities.
+**Study Mate** is an intelligent PDF learning companion that transforms how you interact with documents. Upload PDFs and engage with them through voice conversations, generate mind maps, create podcasts, and extract insights—all powered by cutting-edge AI technology.
+
+> 🏆 **Created for TKRES Hackathon 2025** (29th & 30th August 2025)
+> An innovative solution showcasing AI-powered document interaction and learning enhancement
+> 💡 Competing for ₹15,000 Winner Prize | Team Innovation Challenge
+
+## 🏆 TKRES Hackathon 2025 Submission
+
+This project was developed for the **TKRES Hackathon 2025**, demonstrating innovation in AI-powered educational technology.
+
+### 📅 Hackathon Details
+- **Event**: TKRES Hackathon 2025
+- **Dates**: 29th & 30th August 2025
+- **Bootcamp**: 25th – 28th August 2025
+- **Timings**: 9:40 AM – 4:20 PM
+- **Prizes**: 🏆 Winner – ₹15,000 | 🥈 Runner – ₹10,000
+- **Registration**: [CodeTapasya Hackathon](https://www.codetapasya.com/hackathon)
+
+### 🎯 Innovation Focus
+Study Mate addresses the challenge of making document learning more interactive and accessible through:
+- **Voice-First Interaction**: Natural conversation with PDFs
+- **Page-Specific Queries**: Ask questions about specific pages or sections
+- **AI-Powered Insights**: Generate summaries, mind maps, and podcasts
+- **Multi-Modal Learning**: Visual, auditory, and text-based learning support
 
 ## ✨ Features Overview
 
@@ -13,7 +36,11 @@ A comprehensive AI-powered document intelligence platform that transforms PDF li
 - **Semantic Search**: AI-powered search across document content using vector embeddings
 
 ### 🤖 AI-Powered Intelligence
-- **Talk to PDF**: RAG-based conversational interface for document Q&A
+- **Enhanced Talk to PDF**: 🆕 RAG-based conversational interface with page-specific queries
+  - Ask questions about specific pages: "What's on page 5?"
+  - Query page ranges: "Summarize pages 3 to 7"
+  - Natural language page targeting: "What does page 10 say about..."
+  - Voice and text input support with Azure TTS output
 - **Smart Insights**: LLM-generated insights from selected text or document sections
 - **Content Recommendations**: AI-suggested related sections and documents
 - **Knowledge Graphs**: Visual representation of document relationships
@@ -29,6 +56,25 @@ A comprehensive AI-powered document intelligence platform that transforms PDF li
 - **Section Analysis**: Automatic document structure detection and extraction
 - **Multi-document Insights**: Cross-document analysis and recommendations
 
+## 🏅 Technical Achievements (Hackathon Highlights)
+
+### 🆕 Latest Enhancements for TKRES 2025
+- **Page-Specific AI Queries**: Revolutionary feature allowing users to ask questions about specific PDF pages
+- **Enhanced Chat Intelligence**: Smart query parsing that detects page numbers in natural language
+- **Dual Search Architecture**: Page-first search with fallback to semantic section search
+- **Real-time Page Indicators**: Visual feedback showing which pages were referenced in responses
+
+### 🔧 Technical Innovation Stack
+- **Frontend**: React 19 + Vite + TailwindCSS for modern, responsive UI
+- **Backend**: FastAPI + MongoDB for high-performance API and data storage
+- **AI Integration**: Google Gemini Pro for LLM capabilities + Azure TTS for voice synthesis
+- **Document Processing**: PyMuPDF + PDFMiner for advanced PDF text extraction and page analysis
+- **Search Technology**: Sentence Transformers for semantic search + custom text-based fallback
+
+### 🎯 Problem-Solution Fit
+**Problem**: Students struggle with large PDF documents, unable to quickly find and discuss specific content
+**Solution**: AI-powered conversational interface with precise page targeting and multi-modal interaction
+
 ## 🚀 Docker Setup
 
 ### Prerequisites
@@ -39,8 +85,8 @@ A comprehensive AI-powered document intelligence platform that transforms PDF li
 ### Quick Start
 ```bash
 # 1. Clone the repository
-git clone <repository-url>
-cd adobe-hackies-final-v1
+git clone https://github.com/Avinashreddy48/Study-Mate.git
+cd Study-Mate
 
 # 2. Configure environment variables (see below)
 # Create backend/.env and frontend/.env files
@@ -148,3 +194,25 @@ adobe-hackies-final-v1/
 For detailed implementation guides:
 - Backend API documentation: See `backend/README.md`
 - Frontend development guide: See `frontend/README.md`
+
+---
+
+## 🏆 TKRES Hackathon 2025
+
+**Study Mate** represents our commitment to innovation in educational technology. This project demonstrates how AI can transform traditional document interaction into an engaging, conversational learning experience.
+
+### 🎯 Hackathon Goals Achieved
+✅ **Innovation**: Page-specific AI queries - first of its kind
+✅ **User Experience**: Voice-first, intuitive interface
+✅ **Technical Excellence**: Robust full-stack architecture
+✅ **Problem Solving**: Addresses real student learning challenges
+
+### 🚀 Future Roadmap
+- Multi-language document support
+- Collaborative study sessions
+- Advanced analytics and learning insights
+- Mobile application development
+
+**Team**: Passionate developers creating the future of AI-powered learning
+**Event**: TKRES Hackathon 2025 | 29th & 30th August 2025
+**Registration**: [CodeTapasya Hackathon](https://www.codetapasya.com/hackathon)
