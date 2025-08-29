@@ -1,0 +1,57 @@
+.insight-panel {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.contradictions-section,
+.viewpoints-section {
+  margin-bottom: 20px;
+}
+
+.contradictions-section h3,
+.viewpoints-section h3 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.contradictions-list,
+.viewpoints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contradiction-item,
+.viewpoint-item {
+  padding: 10px;
+  border-radius: 6px;
+  background-color: var(--bg);
+  border-left: 4px solid;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+.contradiction-item {
+  border-left-color: var(--highlight); /* Red for contradictions */
+}
+
+.viewpoint-item {
+  border-left-color: var(--button-secondary); /* Teal for alternate viewpoints */
+}
+
+.keyword {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.no-insights {
+  padding: 15px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}

@@ -1,0 +1,299 @@
+import { useEffect, useState, useRef, memo } from "react";
+import { useTheme } from "../context/ThemeContext";
+import toast from "react-hot-toast";
+
+const PdfViewer = memo(({ file, onTextSelection, targetPage, highlightText, documentId }) => {
+  const { isDarkMode } = useTheme();
+  const viewerRef = useRef(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [selectionInfo, setSelectionInfo] = useState(null);
+  const apisRef = useRef(null);
+
+  // Load existing annotations from the database
+  const loadExistingAnnotations = async (apis, docId) => {
+    if (!docId) return;
+
+    try {
+      setIsLoadingAnnotations(true);
+      const response = await apiService.getDocumentAnnotations(docId);
+      const annotations = response.annotations || [];
+
+      if (annotations.length > 0) {
+        // Convert stored annotations back to Adobe format and add them
+        const adobeAnnotations = annotations.map(annotation => annotation.annotation_data);
+        await apis.addAnnotations(adobeAnnotations);
+        console.log(`Loaded ${annotations.length} existing annotations`);
+      }
+    } catch (error) {
+      console.error('Error loading existing annotations:', error);
+      toast.error('Failed to load existing highlights');
+    } finally {
+      setIsLoadingAnnotations(false);
+    }
+  };
+
+
+
+  useEffect(() => {
+    let selectionTimeout;
+    let selectionCheckInterval;
+    let sdkReadyListener;
+
+    const triggerSelection = (selectedText, source, rectOverride) => {
+      if (!selectedText || selectedText.trim().length <= 3) return;
+
+      const text = selectedText.trim();
+      const wordCount = text.split(/\s+/).filter(Boolean).length;
+      const rect =
+        rectOverride ||
+        (window.getSelection()?.rangeCount
+          ? window.getSelection().getRangeAt(0).getBoundingClientRect()
+          : null);
+
+      setSelectionInfo({
+        text,
+        length: text.length,
+        wordCount,
+        position: rect ? { x: rect.x, y: rect.y } : null,
+        timestamp: new Date().toLocaleTimeString(),
+        source,
+      });
+
+      if (rect && rect.width > 0 && rect.height > 0) {
+        showSelectionFeedback(text, rect);
+      }
+
+      if (onTextSelection) {
+        onTextSelection(text);
+      }
+    };
+
+    const debounceSelection = (text, source, rectOverride) => {
+      clearTimeout(selectionTimeout);
+      selectionTimeout = setTimeout(() => {
+        triggerSelection(text, source, rectOverride);
+      }, 1800);
+    };
+
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const text = selection.toString();
+        if (text.trim().length > 0) {
+          debounceSelection(text, "manual-idle");
+        }
+      }
+    };
+    document.addEventListener("selectionchange", handleSelectionChange);
+
+    const initAdobeViewer = () => {
+      try {
+        const apiKey = import.meta.env.ADOBE_EMBED_API_KEY || import.meta.env.VITE_ADOBE_CLIENT_ID;
+        if (!apiKey) {
+          console.error("Adobe Embed API key is missing. Set ADOBE_EMBED_API_KEY in .env");
+          return;
+        }
+        const viewerContainer = document.getElementById("adobe-dc-view");
+        if (!viewerContainer) return;
+        viewerContainer.innerHTML = '';
+
+        const adobeDCView = new window.AdobeDC.View({
+          clientId: apiKey,
+          divId: "adobe-dc-view",
+        });
+
+        viewerRef.current = adobeDCView;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const previewFilePromise = adobeDCView.previewFile(
+            {
+              content: { promise: Promise.resolve(e.target.result) },
+              metaData: { fileName: file.name },
+            },
+            {
+              embedMode: "SIZED_CONTAINER",
+              uiTheme: isDarkMode ? "DARK" : "LIGHT",
+              showDownloadPDF: true,
+              showPrintPDF: true,
+              enableFormFilling: false,
+              showAnnotationTools: false,
+              showLeftHandPanel: false,
+              enableSearchAPIs: true,
+            }
+          );
+
+          previewFilePromise.then((adobeViewer) => {
+            adobeViewer.getAPIs().then((apis) => {
+              apisRef.current = apis;
+              apis.enableTextSelection(true);
+
+
+
+              if (targetPage && targetPage > 0) {
+                const attemptNavigation = (attempt = 1) => {
+                  const delay = attempt * 1500;
+                  setTimeout(() => {
+                    setIsNavigating(true);
+                    apis.gotoLocation(targetPage)
+                      .then(() => {
+                        setIsNavigating(false);
+                        toast.success(`Navigated to page ${targetPage}`);
+                        if (highlightText && highlightText.trim()) {
+                          setTimeout(() => {
+                            apis
+                              .search(highlightText.trim())
+                              .catch(() => {})
+                          }, 1000);
+                        }
+                      })
+                      .catch((error) => {
+                        if (attempt < 3) {
+                          attemptNavigation(attempt + 1);
+                        } else {
+                          setIsNavigating(false);
+                          toast.error(`Failed to navigate to page ${targetPage}`);
+                        }
+                      });
+                  }, delay);
+                };
+                attemptNavigation();
+              }
+
+              const checkForSelection = () => {
+                apis.getSelectedContent().then((result) => {
+                  if (result?.type === "text" && result.data) {
+                    debounceSelection(result.data, "adobe-api");
+                  }
+                }).catch((error) => {
+                  // Silently handle errors - this is normal when no text is selected
+                });
+              };
+              selectionCheckInterval = setInterval(checkForSelection, 1000);
+            });
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      } catch (error) {
+        console.warn("Adobe viewer init failed:", error);
+      }
+    };
+
+    if (file) {
+      if (window.AdobeDC?.View) {
+        initAdobeViewer();
+      } else {
+        sdkReadyListener = () => initAdobeViewer();
+        window.addEventListener("adobe_dc_view_sdk.ready", sdkReadyListener);
+      }
+    }
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      if (sdkReadyListener) {
+        window.removeEventListener("adobe_dc_view_sdk.ready", sdkReadyListener);
+      }
+      clearTimeout(selectionTimeout);
+      clearInterval(selectionCheckInterval);
+      document.querySelectorAll(".selection-notification").forEach((n) => n.remove());
+    };
+  }, [file, onTextSelection, targetPage, highlightText, isDarkMode, documentId]);
+
+  const showSelectionFeedback = (text, rect) => {
+    try {
+      document.querySelectorAll(".selection-notification").forEach((notif) => notif.remove());
+
+      const safeRect = {
+        bottom: rect.bottom || rect.top + (rect.height || 20),
+        left: Math.max(10, rect.left || 10),
+        width: rect.width || 200,
+      };
+
+      const notification = document.createElement("div");
+      notification.className = "selection-notification";
+      notification.style.cssText = `
+        position: fixed;
+        top: ${safeRect.bottom + 10}px;
+        left: ${safeRect.left}px;
+        background: #10b981;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+        word-wrap: break-word;
+        pointer-events: none;
+      `;
+
+      const wordCount = text.split(/\s+/).filter(Boolean).length;
+      notification.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 2px;">✓ Text Selected</div>
+        <div>${wordCount} words • ${text.length} characters</div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.style.animation = "slideOut 0.3s ease-in";
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
+        }
+      }, 3000);
+    } catch (error) {
+      console.warn("Error showing selection feedback:", error);
+    }
+  };
+
+  return (
+    <div className="relative w-full h-full">
+      {isNavigating && (
+        <div className="absolute top-4 left-4 bg-[var(--button-secondary)] text-white px-3 py-2 rounded-lg shadow-lg z-50 flex items-center">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+          Navigating to page {targetPage}...
+        </div>
+      )}
+
+
+
+
+
+      <div id="adobe-dc-view" className="w-full h-full"></div>
+
+      {selectionInfo && (
+        <div className="absolute top-4 right-4 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-3 shadow-lg z-50 max-w-xs">
+          <div className="text-xs text-[var(--text-secondary)] mb-1">Last Selection</div>
+          <div className="text-sm font-medium text-[var(--text-primary)] mb-2">
+            {selectionInfo.wordCount} words • {selectionInfo.length} chars
+          </div>
+          <div className="text-xs text-[var(--text-secondary)] truncate">
+            "{selectionInfo.text.substring(0, 50)}
+            {selectionInfo.text.length > 50 ? "..." : ""}"
+          </div>
+          <div className="text-xs text-[var(--text-secondary)] opacity-70 mt-1">
+            {selectionInfo.timestamp} • {selectionInfo.source || "manual"}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideOut {
+          from { opacity: 1; transform: translateY(0); }
+          to { opacity: 0; transform: translateY(-10px); }
+        }
+      `}</style>
+    </div>
+  );
+});
+
+export default PdfViewer;
