@@ -1,6 +1,6 @@
 # 📚 Study Mate - AI-Powered PDF Learning Assistant
 
-> **Demo Video**: [🎥 Watch Demo](https://drive.google.com/file/d/1marIhmZvvUtLh5wtS4zAtEZIdfhJmfQJ/view?usp=sharing)
+> **Demo Video**: [🎥 Watch Demo]()
 
 **Study Mate** is an intelligent PDF learning companion that transforms how you interact with documents. Upload PDFs and engage with them through voice conversations, generate mind maps, create podcasts, and extract insights—all powered by cutting-edge AI technology.
 
